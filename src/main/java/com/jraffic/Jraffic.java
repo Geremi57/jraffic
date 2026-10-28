@@ -94,8 +94,8 @@ public class Jraffic extends Application {
 
     private Direction directionFromKey(KeyCode key) {
         return switch (key) {
-            case UP -> Direction.NORTH;
-            case DOWN -> Direction.SOUTH;
+            case UP -> Direction.SOUTH;
+            case DOWN -> Direction.NORTH;
             case LEFT -> Direction.EAST;
             case RIGHT -> Direction.WEST;
             case R -> randomDirection();
