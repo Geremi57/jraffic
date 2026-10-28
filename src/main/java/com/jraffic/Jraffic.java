@@ -169,7 +169,7 @@ public class Jraffic extends Application {
 
     private long calculateGreenDuration(boolean verticalGreen) {
         long waitingVehicles = vehicles.stream()
-                .filter(vehicle -> !vehicle.hasEnteredIntersection())
+                .filter(vehicle -> !vehicle.hasPassedIntersection())
                 .filter(vehicle -> switch (vehicle.getDirection()) {
                     case NORTH, SOUTH -> verticalGreen;
                     case EAST, WEST -> !verticalGreen;
