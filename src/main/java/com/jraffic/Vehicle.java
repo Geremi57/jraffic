@@ -266,7 +266,7 @@ public class Vehicle {
                 case WEST -> other.x - (x + body.getWidth());
             };
 
-            if (gap < SAFETY_GAP) {
+            if (gap <= SAFETY_GAP + SPEED) {
                 return false;
             }
         }
