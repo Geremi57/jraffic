@@ -18,6 +18,7 @@ public class Vehicle {
 
     private double x;
     private double y;
+    private boolean hasEnteredIntersection;
 
     public Vehicle(Direction direction, Route route) {
         this.direction = direction;
@@ -71,7 +72,7 @@ public class Vehicle {
     }
 
     public void update(boolean greenLight, List<Vehicle> vehicles) {
-        if (!greenLight && hasReachedStopLine()) {
+        if (!greenLight && !hasEnteredIntersection && hasReachedStopLine()) {
             return;
         }
 
@@ -89,9 +90,13 @@ public class Vehicle {
             case WEST -> x += SPEED;
         }
 
-        if (!greenLight && crossesStopLine(previousX, previousY)) {
-            x = previousX;
-            y = previousY;
+        if (!hasEnteredIntersection && crossesStopLine(previousX, previousY)) {
+            if (greenLight) {
+                hasEnteredIntersection = true;
+            } else {
+                x = previousX;
+                y = previousY;
+            }
         }
 
         updateShape();
