@@ -17,6 +17,12 @@ public class Jraffic extends Application {
 
     private static final double WIDTH = 1000;
     private static final double HEIGHT = 700;
+    private static final double VEHICLE_LENGTH = 24;
+    private static final double SAFETY_GAP = 30;
+    private static final int VERTICAL_LANE_CAPACITY =
+            (int) Math.floor(HEIGHT / (VEHICLE_LENGTH + SAFETY_GAP));
+    private static final int HORIZONTAL_LANE_CAPACITY =
+            (int) Math.floor(WIDTH / (VEHICLE_LENGTH + SAFETY_GAP));
     private static final long LIGHT_PHASE_DURATION = 5_000_000_000L;
 
     private final List<Vehicle> vehicles = new ArrayList<>();
@@ -114,6 +120,20 @@ public class Jraffic extends Application {
     }
 
     private boolean canSpawn(Vehicle newVehicle) {
+        long laneVehicleCount = vehicles.stream()
+                .filter(vehicle ->
+                        vehicle.getDirection() == newVehicle.getDirection())
+                .count();
+
+        int laneCapacity = switch (newVehicle.getDirection()) {
+            case NORTH, SOUTH -> VERTICAL_LANE_CAPACITY;
+            case EAST, WEST -> HORIZONTAL_LANE_CAPACITY;
+        };
+
+        if (laneVehicleCount >= laneCapacity) {
+            return false;
+        }
+
         for (Vehicle vehicle : vehicles) {
             if (vehicle.getDirection() != newVehicle.getDirection()) {
                 continue;
