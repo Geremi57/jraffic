@@ -138,6 +138,17 @@ public class Vehicle {
                 continue;
             }
 
+            boolean otherIsAhead = switch (direction) {
+                case NORTH -> other.y > y;
+                case SOUTH -> other.y < y;
+                case EAST -> other.x < x;
+                case WEST -> other.x > x;
+            };
+
+            if (!otherIsAhead) {
+                continue;
+            }
+
             double gap = switch (direction) {
                 case NORTH -> other.y - (y + body.getHeight());
                 case SOUTH -> y - (other.y + other.body.getHeight());
@@ -145,7 +156,7 @@ public class Vehicle {
                 case WEST -> other.x - (x + body.getWidth());
             };
 
-            if (gap >= 0 && gap < SAFETY_GAP) {
+            if (gap < SAFETY_GAP) {
                 return false;
             }
         }
