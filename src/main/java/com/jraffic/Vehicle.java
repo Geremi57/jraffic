@@ -60,6 +60,14 @@ public class Vehicle {
     }
 
     public void update() {
+        update(true);
+    }
+
+    public void update(boolean greenLight) {
+        if (!greenLight && !hasReachedStopLine()) {
+            return;
+        }
+
         switch (direction) {
             case NORTH -> y += SPEED;
             case SOUTH -> y -= SPEED;
@@ -68,6 +76,15 @@ public class Vehicle {
         }
 
         updateShape();
+    }
+
+    private boolean hasReachedStopLine() {
+        return switch (direction) {
+            case NORTH -> y >= 216;
+            case SOUTH -> y <= 470;
+            case EAST -> x <= 628;
+            case WEST -> x >= 372;
+        };
     }
 
     private void updateShape() {
