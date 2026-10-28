@@ -133,6 +133,7 @@ public class Jraffic extends Application {
         long laneVehicleCount = vehicles.stream()
                 .filter(vehicle ->
                         vehicle.getDirection() == newVehicle.getDirection())
+                .filter(vehicle -> !vehicle.hasPassedIntersection())
                 .count();
 
         int laneCapacity = switch (newVehicle.getDirection()) {
