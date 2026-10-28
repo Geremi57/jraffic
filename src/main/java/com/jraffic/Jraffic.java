@@ -1,5 +1,6 @@
 package com.jraffic;
 
+import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.layout.Pane;
@@ -21,6 +22,22 @@ public class Jraffic extends Application {
         drawStopLines(root);
         drawTrafficLights(root);
 
+        Vehicle vehicle = new Vehicle(
+                Direction.NORTH,
+                Route.STRAIGHT
+        );
+
+        root.getChildren().add(vehicle.getBody());
+
+        AnimationTimer timer = new AnimationTimer() {
+            @Override
+            public void handle(long now) {
+                vehicle.update();
+            }
+        };
+
+        timer.start();
+
         Scene scene = new Scene(root, WIDTH, HEIGHT);
 
         stage.setTitle("Jraffic");
@@ -33,62 +50,32 @@ public class Jraffic extends Application {
     }
 
     private void drawRoads(Pane root) {
-        // Horizontal road
-        Rectangle horizontalRoad = new Rectangle(
-                0, 250,
-                WIDTH, 200
-        );
+        Rectangle horizontalRoad = new Rectangle(0, 250, WIDTH, 200);
         horizontalRoad.setFill(Color.DIMGRAY);
 
-        // Vertical road
-        Rectangle verticalRoad = new Rectangle(
-                400, 0,
-                200, HEIGHT
-        );
+        Rectangle verticalRoad = new Rectangle(400, 0, 200, HEIGHT);
         verticalRoad.setFill(Color.DIMGRAY);
 
         root.getChildren().addAll(horizontalRoad, verticalRoad);
 
-        // Lane markings
         for (int x = 0; x < WIDTH; x += 40) {
-            Rectangle marking = new Rectangle(
-                    x, 348,
-                    25, 4
-            );
+            Rectangle marking = new Rectangle(x, 348, 25, 4);
             marking.setFill(Color.WHITE);
             root.getChildren().add(marking);
         }
 
         for (int y = 0; y < HEIGHT; y += 40) {
-            Rectangle marking = new Rectangle(
-                    498, y,
-                    4, 25
-            );
+            Rectangle marking = new Rectangle(498, y, 4, 25);
             marking.setFill(Color.WHITE);
             root.getChildren().add(marking);
         }
     }
 
     private void drawStopLines(Pane root) {
-        Rectangle northStop = new Rectangle(
-                400, 230,
-                200, 6
-        );
-
-        Rectangle southStop = new Rectangle(
-                400, 464,
-                200, 6
-        );
-
-        Rectangle westStop = new Rectangle(
-                380, 250,
-                6, 200
-        );
-
-        Rectangle eastStop = new Rectangle(
-                614, 250,
-                6, 200
-        );
+        Rectangle northStop = new Rectangle(400, 230, 200, 6);
+        Rectangle southStop = new Rectangle(400, 464, 200, 6);
+        Rectangle westStop = new Rectangle(380, 250, 6, 200);
+        Rectangle eastStop = new Rectangle(614, 250, 6, 200);
 
         northStop.setFill(Color.WHITE);
         southStop.setFill(Color.WHITE);
@@ -115,7 +102,6 @@ public class Jraffic extends Application {
         light.setFill(Color.RED);
         light.setArcWidth(5);
         light.setArcHeight(5);
-
         root.getChildren().add(light);
     }
 
