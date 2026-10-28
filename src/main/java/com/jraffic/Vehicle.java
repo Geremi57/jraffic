@@ -72,6 +72,14 @@ public class Vehicle {
     }
 
     public void update(boolean greenLight, List<Vehicle> vehicles) {
+        update(greenLight, vehicles, true);
+    }
+
+    public void update(
+            boolean greenLight,
+            List<Vehicle> vehicles,
+            boolean intersectionAvailable
+    ) {
         if (!greenLight && !hasEnteredIntersection && hasReachedStopLine()) {
             return;
         }
@@ -91,7 +99,7 @@ public class Vehicle {
         }
 
         if (!hasEnteredIntersection && crossesStopLine(previousX, previousY)) {
-            if (greenLight) {
+            if (greenLight && intersectionAvailable) {
                 hasEnteredIntersection = true;
             } else {
                 x = previousX;
