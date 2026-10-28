@@ -7,7 +7,6 @@ public class Vehicle {
 
     private static final double WIDTH = 24;
     private static final double HEIGHT = 14;
-
     private static final double SPEED = 2.0;
 
     private final Direction direction;
@@ -21,10 +20,10 @@ public class Vehicle {
         this.direction = direction;
         this.route = route;
 
-        this.body = new Rectangle(WIDTH, HEIGHT);
-        this.body.setFill(routeColor(route));
-        this.body.setArcWidth(5);
-        this.body.setArcHeight(5);
+        body = new Rectangle(WIDTH, HEIGHT);
+        body.setFill(routeColor(route));
+        body.setArcWidth(5);
+        body.setArcHeight(5);
 
         setSpawnPosition();
     }
