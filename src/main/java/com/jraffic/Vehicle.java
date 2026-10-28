@@ -20,6 +20,7 @@ public class Vehicle {
     private double x;
     private double y;
     private boolean hasEnteredIntersection;
+    private boolean hasPassedIntersection;
     private boolean hasTurned;
     private double turnProgress;
     private double turnStartX;
@@ -55,6 +56,7 @@ public class Vehicle {
 
     private void setSpawnPosition() {
         switch (approachDirection) {
+            // Keep-left vertical traffic
             case NORTH -> {
                 x = 538;
                 y = 0;
@@ -63,13 +65,15 @@ public class Vehicle {
                 x = 438;
                 y = 686;
             }
+
+            // Restore the original horizontal lanes
             case EAST -> {
                 x = 986;
-                y = 288;
+                y = 388;
             }
             case WEST -> {
                 x = 0;
-                y = 388;
+                y = 288;
             }
         }
 
@@ -118,6 +122,7 @@ public class Vehicle {
         if (!hasEnteredIntersection && crossesStopLine(previousX, previousY)) {
             if (greenLight && intersectionAvailable) {
                 hasEnteredIntersection = true;
+                hasPassedIntersection = true;
 
                 if (route != Route.STRAIGHT) {
                     initializeTurn();
@@ -142,13 +147,13 @@ public class Vehicle {
                 exitDirection = route == Route.LEFT
                         ? Direction.WEST : Direction.EAST;
                 turnEndX = route == Route.LEFT ? 620 : 366;
-                turnEndY = route == Route.LEFT ? 388 : 288;
+                turnEndY = route == Route.LEFT ? 288 : 388;
             }
             case SOUTH -> {
                 exitDirection = route == Route.LEFT
                         ? Direction.EAST : Direction.WEST;
                 turnEndX = route == Route.LEFT ? 366 : 620;
-                turnEndY = route == Route.LEFT ? 288 : 388;
+                turnEndY = route == Route.LEFT ? 388 : 288;
             }
             case EAST -> {
                 exitDirection = route == Route.LEFT
@@ -210,6 +215,10 @@ public class Vehicle {
 
     public boolean hasEnteredIntersection() {
         return hasEnteredIntersection;
+    }
+
+    public boolean hasPassedIntersection() {
+        return hasPassedIntersection;
     }
 
     private void clearIntersectionReservationIfExited() {
