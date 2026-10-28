@@ -100,6 +100,28 @@ public class Vehicle {
         }
 
         updateShape();
+        clearIntersectionReservationIfExited();
+    }
+
+    public boolean hasEnteredIntersection() {
+        return hasEnteredIntersection;
+    }
+
+    private void clearIntersectionReservationIfExited() {
+        if (!hasEnteredIntersection) {
+            return;
+        }
+
+        boolean cleared = switch (direction) {
+            case NORTH -> y >= 450;
+            case SOUTH -> y + body.getHeight() <= 250;
+            case EAST -> x + body.getWidth() <= 400;
+            case WEST -> x >= 600;
+        };
+
+        if (cleared) {
+            hasEnteredIntersection = false;
+        }
     }
 
     private boolean hasSpaceAhead(List<Vehicle> vehicles) {
