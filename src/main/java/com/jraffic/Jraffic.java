@@ -191,7 +191,11 @@ public class Jraffic extends Application {
                 case EAST, WEST -> eastLight.isGreen();
             };
 
-            vehicle.update(greenLight, vehicles);
+            boolean intersectionAvailable = vehicles.stream()
+                    .noneMatch(other ->
+                            other != vehicle && other.hasEnteredIntersection());
+
+            vehicle.update(greenLight, vehicles, intersectionAvailable);
         }
     }
 
