@@ -56,11 +56,11 @@ public class Vehicle {
     private void setSpawnPosition() {
         switch (approachDirection) {
             case NORTH -> {
-                x = 438;
+                x = 538;
                 y = 0;
             }
             case SOUTH -> {
-                x = 538;
+                x = 438;
                 y = 686;
             }
             case EAST -> {
