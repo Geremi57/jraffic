@@ -80,7 +80,7 @@ public class Vehicle {
             List<Vehicle> vehicles,
             boolean intersectionAvailable
     ) {
-        if (!greenLight && !hasEnteredIntersection && hasReachedStopLine()) {
+        if (!greenLight && !hasEnteredIntersection && isAtStopLine()) {
             return;
         }
 
@@ -153,12 +153,12 @@ public class Vehicle {
         return true;
     }
 
-    private boolean hasReachedStopLine() {
+    private boolean isAtStopLine() {
         return switch (direction) {
-            case NORTH -> y >= 216;
-            case SOUTH -> y <= 470;
-            case EAST -> x <= 620;
-            case WEST -> x >= 366;
+            case NORTH -> y >= 216 && y < 250;
+            case SOUTH -> y <= 470 && y > 450;
+            case EAST -> x <= 620 && x > 600;
+            case WEST -> x >= 366 && x < 400;
         };
     }
 
