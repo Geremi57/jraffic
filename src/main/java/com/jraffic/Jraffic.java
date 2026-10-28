@@ -23,7 +23,9 @@ public class Jraffic extends Application {
             (int) Math.floor(HEIGHT / (VEHICLE_LENGTH + SAFETY_GAP));
     private static final int HORIZONTAL_LANE_CAPACITY =
             (int) Math.floor(WIDTH / (VEHICLE_LENGTH + SAFETY_GAP));
-    private static final long LIGHT_PHASE_DURATION = 5_000_000_000L;
+    private static final long MIN_LIGHT_PHASE_DURATION = 4_000_000_000L;
+    private static final long MAX_LIGHT_PHASE_DURATION = 12_000_000_000L;
+    private static final long EXTRA_TIME_PER_VEHICLE = 1_000_000_000L;
 
     private final List<Vehicle> vehicles = new ArrayList<>();
     private final Random random = new Random();
@@ -68,15 +70,19 @@ public class Jraffic extends Application {
 
         AnimationTimer timer = new AnimationTimer() {
             private long phaseStart;
+            private long phaseDuration;
+            private boolean verticalGreen = true;
 
             @Override
             public void handle(long now) {
                 if (phaseStart == 0) {
                     phaseStart = now;
+                    phaseDuration = calculateGreenDuration(verticalGreen);
+                } else if (now - phaseStart >= phaseDuration) {
+                    verticalGreen = !verticalGreen;
+                    phaseStart = now;
+                    phaseDuration = calculateGreenDuration(verticalGreen);
                 }
-
-                boolean verticalGreen =
-                        ((now - phaseStart) / LIGHT_PHASE_DURATION) % 2 == 0;
 
                 updateTrafficLights(verticalGreen);
                 updateVehicles();
@@ -154,6 +160,21 @@ public class Jraffic extends Application {
             case EAST -> WIDTH - vehicle.getX();
             case WEST -> vehicle.getX();
         };
+    }
+
+    private long calculateGreenDuration(boolean verticalGreen) {
+        long waitingVehicles = vehicles.stream()
+                .filter(vehicle -> !vehicle.hasEnteredIntersection())
+                .filter(vehicle -> switch (vehicle.getDirection()) {
+                    case NORTH, SOUTH -> verticalGreen;
+                    case EAST, WEST -> !verticalGreen;
+                })
+                .count();
+
+        long duration = MIN_LIGHT_PHASE_DURATION
+                + waitingVehicles * EXTRA_TIME_PER_VEHICLE;
+
+        return Math.min(duration, MAX_LIGHT_PHASE_DURATION);
     }
 
     private void updateTrafficLights(boolean verticalGreen) {
