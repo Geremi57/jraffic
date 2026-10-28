@@ -17,11 +17,17 @@ public class Jraffic extends Application {
 
     private static final double WIDTH = 1000;
     private static final double HEIGHT = 700;
+    private static final long LIGHT_PHASE_DURATION = 5_000_000_000L;
 
     private final List<Vehicle> vehicles = new ArrayList<>();
     private final Random random = new Random();
 
     private Pane root;
+
+    private TrafficLight northLight;
+    private TrafficLight southLight;
+    private TrafficLight eastLight;
+    private TrafficLight westLight;
 
     @Override
     public void start(Stage stage) {
@@ -51,11 +57,22 @@ public class Jraffic extends Application {
         stage.setScene(scene);
         stage.show();
 
+        root.setFocusTraversable(true);
         root.requestFocus();
 
         AnimationTimer timer = new AnimationTimer() {
+            private long phaseStart;
+
             @Override
             public void handle(long now) {
+                if (phaseStart == 0) {
+                    phaseStart = now;
+                }
+
+                boolean verticalGreen =
+                        ((now - phaseStart) / LIGHT_PHASE_DURATION) % 2 == 0;
+
+                updateTrafficLights(verticalGreen);
                 updateVehicles();
             }
         };
@@ -81,7 +98,6 @@ public class Jraffic extends Application {
 
     private void spawnVehicle(Direction direction) {
         Route route = randomRoute();
-
         Vehicle vehicle = new Vehicle(direction, route);
 
         if (!canSpawn(vehicle)) {
@@ -120,9 +136,21 @@ public class Jraffic extends Application {
         };
     }
 
+    private void updateTrafficLights(boolean verticalGreen) {
+        northLight.setGreen(verticalGreen);
+        southLight.setGreen(verticalGreen);
+        eastLight.setGreen(!verticalGreen);
+        westLight.setGreen(!verticalGreen);
+    }
+
     private void updateVehicles() {
         for (Vehicle vehicle : vehicles) {
-            vehicle.update();
+            boolean greenLight = switch (vehicle.getDirection()) {
+                case NORTH, SOUTH -> northLight.isGreen();
+                case EAST, WEST -> eastLight.isGreen();
+            };
+
+            vehicle.update(greenLight);
         }
     }
 
@@ -172,18 +200,17 @@ public class Jraffic extends Application {
     }
 
     private void drawTrafficLights() {
-        addTrafficLight(375, 210);
-        addTrafficLight(605, 475);
-        addTrafficLight(365, 235);
-        addTrafficLight(625, 450);
-    }
+        northLight = new TrafficLight(375, 210);
+        southLight = new TrafficLight(605, 475);
+        westLight = new TrafficLight(365, 235);
+        eastLight = new TrafficLight(625, 450);
 
-    private void addTrafficLight(double x, double y) {
-        Rectangle light = new Rectangle(x, y, 20, 20);
-        light.setFill(Color.RED);
-        light.setArcWidth(5);
-        light.setArcHeight(5);
-        root.getChildren().add(light);
+        root.getChildren().addAll(
+                northLight.getBody(),
+                southLight.getBody(),
+                westLight.getBody(),
+                eastLight.getBody()
+        );
     }
 
     public static void main(String[] args) {
