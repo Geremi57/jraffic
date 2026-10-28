@@ -144,13 +144,13 @@ public class Jraffic extends Application {
     }
 
     private void updateVehicles() {
-        for (Vehicle vehicle : vehicles) {
+        for (Vehicle vehicle : List.copyOf(vehicles)) {
             boolean greenLight = switch (vehicle.getDirection()) {
                 case NORTH, SOUTH -> northLight.isGreen();
                 case EAST, WEST -> eastLight.isGreen();
             };
 
-            vehicle.update(greenLight);
+            vehicle.update(greenLight, vehicles);
         }
     }
 
