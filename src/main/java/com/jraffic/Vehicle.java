@@ -12,16 +12,29 @@ public class Vehicle {
     private static final double SPEED = 2.0;
     private static final double SAFETY_GAP = 30;
 
-    private final Direction direction;
+    private Direction direction;
+    private final Direction approachDirection;
     private final Route route;
     private final Rectangle body;
 
     private double x;
     private double y;
     private boolean hasEnteredIntersection;
+    private boolean hasTurned;
+    private double turnProgress;
+    private double turnStartX;
+    private double turnStartY;
+    private double control1X;
+    private double control1Y;
+    private double control2X;
+    private double control2Y;
+    private double turnEndX;
+    private double turnEndY;
+    private Direction exitDirection;
 
     public Vehicle(Direction direction, Route route) {
         this.direction = direction;
+        this.approachDirection = direction;
         this.route = route;
 
         body = new Rectangle(WIDTH, HEIGHT);
@@ -41,7 +54,7 @@ public class Vehicle {
     }
 
     private void setSpawnPosition() {
-        switch (direction) {
+        switch (approachDirection) {
             case NORTH -> {
                 x = 438;
                 y = 0;
@@ -91,16 +104,24 @@ public class Vehicle {
         double previousX = x;
         double previousY = y;
 
-        switch (direction) {
-            case NORTH -> y += SPEED;
-            case SOUTH -> y -= SPEED;
-            case EAST -> x -= SPEED;
-            case WEST -> x += SPEED;
+        if (hasEnteredIntersection && route != Route.STRAIGHT && !hasTurned) {
+            moveTurningVehicle();
+        } else {
+            switch (direction) {
+                case NORTH -> y += SPEED;
+                case SOUTH -> y -= SPEED;
+                case EAST -> x -= SPEED;
+                case WEST -> x += SPEED;
+            }
         }
 
         if (!hasEnteredIntersection && crossesStopLine(previousX, previousY)) {
             if (greenLight && intersectionAvailable) {
                 hasEnteredIntersection = true;
+
+                if (route != Route.STRAIGHT) {
+                    initializeTurn();
+                }
             } else {
                 x = previousX;
                 y = previousY;
@@ -111,12 +132,92 @@ public class Vehicle {
         clearIntersectionReservationIfExited();
     }
 
+    private void initializeTurn() {
+        turnProgress = 0;
+        turnStartX = x;
+        turnStartY = y;
+
+        switch (approachDirection) {
+            case NORTH -> {
+                exitDirection = route == Route.LEFT
+                        ? Direction.WEST : Direction.EAST;
+                turnEndX = route == Route.LEFT ? 620 : 366;
+                turnEndY = route == Route.LEFT ? 388 : 288;
+            }
+            case SOUTH -> {
+                exitDirection = route == Route.LEFT
+                        ? Direction.EAST : Direction.WEST;
+                turnEndX = route == Route.LEFT ? 366 : 620;
+                turnEndY = route == Route.LEFT ? 288 : 388;
+            }
+            case EAST -> {
+                exitDirection = route == Route.LEFT
+                        ? Direction.NORTH : Direction.SOUTH;
+                turnEndX = route == Route.LEFT ? 538 : 438;
+                turnEndY = route == Route.LEFT ? 470 : 216;
+            }
+            case WEST -> {
+                exitDirection = route == Route.LEFT
+                        ? Direction.SOUTH : Direction.NORTH;
+                turnEndX = route == Route.LEFT ? 438 : 538;
+                turnEndY = route == Route.LEFT ? 216 : 470;
+            }
+        }
+
+        double[] entryVector = movementVector(approachDirection);
+        double[] exitVector = movementVector(exitDirection);
+        double controlDistance = 75;
+
+        control1X = turnStartX + entryVector[0] * controlDistance;
+        control1Y = turnStartY + entryVector[1] * controlDistance;
+        control2X = turnEndX - exitVector[0] * controlDistance;
+        control2Y = turnEndY - exitVector[1] * controlDistance;
+    }
+
+    private double[] movementVector(Direction direction) {
+        return switch (direction) {
+            case NORTH -> new double[]{0, 1};
+            case SOUTH -> new double[]{0, -1};
+            case EAST -> new double[]{-1, 0};
+            case WEST -> new double[]{1, 0};
+        };
+    }
+
+    private void moveTurningVehicle() {
+        turnProgress = Math.min(1.0, turnProgress + SPEED / 100.0);
+
+        double t = turnProgress;
+        double inverse = 1.0 - t;
+
+        x = inverse * inverse * inverse * turnStartX
+                + 3 * inverse * inverse * t * control1X
+                + 3 * inverse * t * t * control2X
+                + t * t * t * turnEndX;
+
+        y = inverse * inverse * inverse * turnStartY
+                + 3 * inverse * inverse * t * control1Y
+                + 3 * inverse * t * t * control2Y
+                + t * t * t * turnEndY;
+
+        body.setRotate((route == Route.LEFT ? -90 : 90) * t);
+
+        if (turnProgress >= 1.0) {
+            direction = exitDirection;
+            hasTurned = true;
+            body.setRotate(0);
+        }
+    }
+
     public boolean hasEnteredIntersection() {
         return hasEnteredIntersection;
     }
 
     private void clearIntersectionReservationIfExited() {
         if (!hasEnteredIntersection) {
+            return;
+        }
+
+        if (route != Route.STRAIGHT && !hasTurned) {
             return;
         }
 
@@ -165,7 +266,7 @@ public class Vehicle {
     }
 
     private boolean isAtStopLine() {
-        return switch (direction) {
+        return switch (approachDirection) {
             case NORTH -> y >= 216 && y < 250;
             case SOUTH -> y <= 470 && y > 450;
             case EAST -> x <= 620 && x > 600;
@@ -174,7 +275,7 @@ public class Vehicle {
     }
 
     private boolean crossesStopLine(double previousX, double previousY) {
-        return switch (direction) {
+        return switch (approachDirection) {
             case NORTH -> previousY < 216 && y >= 216;
             case SOUTH -> previousY > 470 && y <= 470;
             case EAST -> previousX > 620 && x <= 620;
