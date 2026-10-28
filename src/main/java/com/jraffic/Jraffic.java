@@ -19,10 +19,14 @@ public class Jraffic extends Application {
     private static final double HEIGHT = 700;
     private static final double VEHICLE_LENGTH = 24;
     private static final double SAFETY_GAP = 30;
+    private static final double VERTICAL_LANE_LENGTH = 216;
+    private static final double HORIZONTAL_LANE_LENGTH = 366;
     private static final int VERTICAL_LANE_CAPACITY =
-            (int) Math.floor(HEIGHT / (VEHICLE_LENGTH + SAFETY_GAP));
+            (int) Math.floor(
+                    VERTICAL_LANE_LENGTH / (VEHICLE_LENGTH + SAFETY_GAP));
     private static final int HORIZONTAL_LANE_CAPACITY =
-            (int) Math.floor(WIDTH / (VEHICLE_LENGTH + SAFETY_GAP));
+            (int) Math.floor(
+                    HORIZONTAL_LANE_LENGTH / (VEHICLE_LENGTH + SAFETY_GAP));
     private static final long MIN_LIGHT_PHASE_DURATION = 4_000_000_000L;
     private static final long MAX_LIGHT_PHASE_DURATION = 12_000_000_000L;
     private static final long EXTRA_TIME_PER_VEHICLE = 1_000_000_000L;
