@@ -3,11 +3,14 @@ package com.jraffic;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 
+import java.util.List;
+
 public class Vehicle {
 
     private static final double WIDTH = 24;
     private static final double HEIGHT = 14;
     private static final double SPEED = 2.0;
+    private static final double SAFETY_GAP = 30;
 
     private final Direction direction;
     private final Route route;
@@ -60,13 +63,24 @@ public class Vehicle {
     }
 
     public void update() {
-        update(true);
+        update(true, List.of());
     }
 
     public void update(boolean greenLight) {
-        if (!greenLight && !hasReachedStopLine()) {
+        update(greenLight, List.of());
+    }
+
+    public void update(boolean greenLight, List<Vehicle> vehicles) {
+        if (!greenLight && hasReachedStopLine()) {
             return;
         }
+
+        if (!hasSpaceAhead(vehicles)) {
+            return;
+        }
+
+        double previousX = x;
+        double previousY = y;
 
         switch (direction) {
             case NORTH -> y += SPEED;
@@ -75,15 +89,50 @@ public class Vehicle {
             case WEST -> x += SPEED;
         }
 
+        if (!greenLight && crossesStopLine(previousX, previousY)) {
+            x = previousX;
+            y = previousY;
+        }
+
         updateShape();
+    }
+
+    private boolean hasSpaceAhead(List<Vehicle> vehicles) {
+        for (Vehicle other : vehicles) {
+            if (other == this || other.direction != direction) {
+                continue;
+            }
+
+            double gap = switch (direction) {
+                case NORTH -> other.y - (y + body.getHeight());
+                case SOUTH -> y - (other.y + other.body.getHeight());
+                case EAST -> x - (other.x + other.body.getWidth());
+                case WEST -> other.x - (x + body.getWidth());
+            };
+
+            if (gap >= 0 && gap < SAFETY_GAP) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private boolean hasReachedStopLine() {
         return switch (direction) {
             case NORTH -> y >= 216;
             case SOUTH -> y <= 470;
-            case EAST -> x <= 628;
-            case WEST -> x >= 372;
+            case EAST -> x <= 620;
+            case WEST -> x >= 366;
+        };
+    }
+
+    private boolean crossesStopLine(double previousX, double previousY) {
+        return switch (direction) {
+            case NORTH -> previousY < 216 && y >= 216;
+            case SOUTH -> previousY > 470 && y <= 470;
+            case EAST -> previousX > 620 && x <= 620;
+            case WEST -> previousX < 366 && x >= 366;
         };
     }
 
